@@ -1,0 +1,95 @@
+{{ define "main" }}
+<div class="hb-blog-main-container container-fluid">
+  <div class="hb-blog-main">
+    {{ partial "hugopress/functions/render-hooks" (dict "Name" "hb-blog-main-begin" "Page" .) }}
+    {{- $toc := default true .Params.toc }}
+    <div class="hb-blog-post position-relative{{ cond $toc ` toc` `` }}">
+      <div class="hb-blog-post-intro hb-module mb-2">
+        <h1 class="hb-blog-post-title text-break">{{ .Title }}</h1>
+        {{- $meta := default dict .Params.meta }}
+        {{- if ne $meta false }}
+          <div class="hb-blog-post-meta">
+            {{- if default true $meta.authors }}
+              {{ partialCached "hb/modules/blog/post/meta/authors" . . }}
+            {{- end }}
+            {{- if default true $meta.date }}
+              {{ partialCached "hb/modules/blog/post/meta/date" . . }}
+            {{- end }}
+            {{- if default true $meta.reading_time }}
+              {{ partialCached "hb/modules/blog/post/meta/reading-time" . . }}
+            {{- end }}
+            {{- if default true $meta.taxonomies }}
+              {{ partialCached "hb/modules/blog/post/meta/taxonomies" . . }}
+            {{- end }}
+            {{ partial "hugopress/functions/render-hooks" (dict "Name" "hb-blog-post-meta" "Page" .) }}
+          </div>
+        {{- end }}
+        {{- with .Description }}
+          <div class="hb-blog-post-desc lead mt-1">{{ . }}</div>
+        {{- end }}
+      </div>
+      {{- $tocPos := default "start" site.Params.hb.blog.toc.position }}
+      {{- if and $toc (ne $tocPos "content") }}
+        <div class="hb-blog-post-toc pe-lg-2 text-body-secondary position-sticky overflow-y-auto">
+          {{- partialCached "hb/modules/blog/post/toc" . . }}
+        </div>
+      {{- end }}
+      <div class="hb-blog-post-main">
+
+        {{ $page := . }}
+        {{ $content := $page.Content | safeHTML }}
+        {{ $gridCards := slice }}
+
+        {{ $blocks := split $content "<!--split-->" }}
+        {{ range $block := $blocks }}
+          {{ if not (eq $block "") }}
+            {{ $html := $block | safeHTML }}
+            {{ $card := printf `
+              <div class="grid-item card mb-4">
+                <div class="card-body">
+                  %s
+                </div>
+              </div>
+            ` $html | replaceRE `<img([^>]+)>` `<img$1 onload="if (window.msnry) msnry.layout()">` }}
+            {{ $gridCards = $gridCards | append $card }}
+          {{ end }}
+        {{ end }}
+
+        {{ if gt (len $gridCards) 0 }}
+          <div id="grid" class="masonry-grid">
+            <div class="grid-sizer"></div>
+            {{ range $gridCards }}
+              {{ . | safeHTML }}
+            {{ end }}
+          </div>
+        {{ end }}
+
+        {{- partial "hugopress/functions/render-hooks" (dict "Name" "hb-blog-post-content-end" "Page" .) }}
+        {{- partial "hb/modules/blog/post/comments" . }}
+        {{- partial "hugopress/functions/render-hooks" (dict "Name" "hb-blog-post-end" "Page" .) }}
+      </div>
+    </div>
+    {{ partial "hugopress/functions/render-hooks" (dict "Name" "hb-blog-main-end" "Page" .) }}
+  </div>
+  {{ partial "hb/modules/blog/sidebar" . }}
+</div>
+
+<!-- Masonry und ImagesLoaded Skripte über assets/gordolin laden -->
+{{ partialCached "hugomods/masonry-js/assets/js" . }}
+{{ partialCached "gordolin/card-columns/imagesloaded" . }}
+
+<!-- Custom Skript laden -->
+{{- $opts := dict
+  "targetPath" "js/index.js"
+  "minify" hugo.IsProduction
+}}
+{{- $js := resources.Get "hb/modules/gordolin/js/index.ts" | js.Build $opts }}
+{{- if hugo.IsProduction }}
+  {{- $js = $js | fingerprint }}
+{{- end }}
+{{ with $js }}
+  <script src="{{ .RelPermalink }}" integrity="{{ .Data.Integrity | default "" }}" crossorigin="anonymous"></script>
+{{ else }}
+  <script>console.error('Custom JavaScript file not found in js/index.js');</script>
+{{ end }}
+{{ end }}

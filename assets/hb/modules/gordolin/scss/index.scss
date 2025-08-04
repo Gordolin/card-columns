@@ -1,0 +1,104 @@
+// Kurznachrichten - Layout
+  .hb-blog-main-container,
+  .hb-blog-main,
+  .hb-blog-post,
+  .hb-blog-post-main {
+    width: 100%;
+    max-width: none;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .hb-blog-post-main .masonry-grid {
+    width: 100%;
+    max-width: none;
+    margin: 0 auto;
+    overflow: visible;
+    clear: both;
+    position: relative;
+  }
+
+  .hb-blog-post-main .masonry-grid .grid-sizer {
+    width: 100%; /* Fallback für < 768px */
+  }
+
+  .hb-blog-post-main .masonry-grid .grid-item.card {
+    width: 100%; /* Fallback */
+    margin-bottom: 10px;
+    box-sizing: border-box;
+    opacity: 1 !important;
+    display: block !important;
+    visibility: visible !important;
+    z-index: 1 !important;
+  }
+
+  @media (max-width: 767.98px) {
+    .hb-blog-post-main .masonry-grid {
+      display: block;
+    }
+    .hb-blog-post-main .masonry-grid .grid-sizer {
+      width: 100%;
+    }
+    .hb-blog-post-main .masonry-grid .grid-item.card {
+      width: 100%;
+      max-width: 768px;
+      opacity: 1 !important;
+      display: block !important;
+      visibility: visible !important;
+      position: static !important; /* Einspaltig: Kein Masonry */
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 1999.98px) {
+    .hb-blog-post-main .masonry-grid {
+      display: block;
+      gap: 10px;
+    }
+    .hb-blog-post-main .masonry-grid .grid-sizer {
+      width: calc((100% - 10px) / 2); /* Zwei Spalten */
+    }
+    .hb-blog-post-main .masonry-grid .grid-item.card {
+      width: calc((100% - 10px) / 2);
+      min-width: 200px;
+      max-width: 1000px;
+      opacity: 1 !important;
+      display: block !important;
+      visibility: visible !important;
+      position: absolute !important; /* Erzwinge für Masonry */
+    }
+  }
+
+  @media (min-width: 2000px) {
+    .hb-blog-post-main .masonry-grid {
+      display: block;
+      gap: 10px;
+    }
+    .hb-blog-post-main .masonry-grid .grid-sizer {
+      width: calc((100% - 20px) / 3); /* Drei Spalten */
+    }
+    .hb-blog-post-main .masonry-grid .grid-item.card {
+      width: calc((100% - 20px) / 3);
+      min-width: 200px;
+      max-width: none;
+      opacity: 1 !important;
+      display: block !important;
+      visibility: visible !important;
+      position: absolute !important; /* Erzwinge für Masonry */
+    }
+  }
+
+  .card {
+    box-sizing: border-box;
+  }
+
+  .img-fluid, .media-fluid {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Überschreiben für .hb-content-panel-wrapper nur auf dieser Seite */
+  .hb-content-panel-wrapper {
+    z-index: 10 !important; /* Höher als .grid-item.card (z-index: 1) */
+  }

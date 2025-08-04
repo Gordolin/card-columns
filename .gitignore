@@ -1,0 +1,9 @@
+.hugo_build.lock
+hugo_stats.json
+package-json.lock
+public/
+node_modules/
+@eaDir/
+/resources/_gen/
+/assets/jsconfig.json
+_vendor

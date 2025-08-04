@@ -1,0 +1,6 @@
+{{ $js := resources.Get "hb/modules/gordolin/imagesloaded/imagesloaded.pkgd.min.js" | resources.Copy "js/imagesloaded.js" }}
+{{ with $js }}
+  <script src="{{ .RelPermalink }}" crossorigin="anonymous"></script>
+{{ else }}
+  <script>console.error('ImagesLoaded JavaScript file not found in assets/gordolin/imagesloaded');</script>
+{{ end }}
