@@ -1,4 +1,4 @@
-module card-columns
+module github.com/gordolin/card-columns
 
 go 1.24.4
 
