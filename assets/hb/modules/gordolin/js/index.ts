@@ -42,8 +42,20 @@ document.addEventListener('DOMContentLoaded', () => {
       fitWidth: false,
       percentPosition: true
     });
-    window.imagesLoaded(grid, () => {
+
+    // imagesLoaded für Bilder und Videos
+    window.imagesLoaded(grid, { background: true }, () => {
+      console.log('ImagesLoaded completed, triggering layout');
       msnry.layout();
+    });
+
+    // Zusätzliche Behandlung für Videos
+    const videos = grid.querySelectorAll('video');
+    videos.forEach(video => {
+      video.addEventListener('loadeddata', () => {
+        console.log('Video loaded, triggering Masonry layout');
+        msnry.layout();
+      });
     });
   } else {
     console.error('Grid container (.masonry-grid) or sizer (.grid-sizer) not found');
