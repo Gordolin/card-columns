@@ -1,0 +1,78 @@
+<!-- layouts/shortcodes/cc.html -->
+{{ $page := .Page }}
+{{ $rawContent := .Inner }}  <!-- Raw Inhalt -->
+
+{{/* Frühzeitiger Exit, falls leer */}}
+{{ if eq $rawContent "" }}
+{{ else }}
+
+{{ $gridCards := slice }}
+
+{{/* Split auf raw */}}
+{{ $blocks := split $rawContent "<!--split-->" }}
+{{ range $block := $blocks }}
+  {{ if not (eq $block "") }}
+    {{/* Render pro Block: Markdown + nested Shortcodes (z. B. my_media zu <video>) */}}
+    {{ $html := $block | $page.RenderString }}
+    {{/* onload nur für Bilder; safeHTML für Output */}}
+    {{ $cardContent := $html | replaceRE `<img([^>]+)>` `<img$1 onload="if (window.msnry) msnry.layout()">` | safeHTML }}
+    {{ $card := printf `
+      <div class="grid-item card mb-4">
+        <div class="card-body">
+          %s
+        </div>
+      </div>
+    ` $cardContent }}
+    {{ $gridCards = $gridCards | append $card }}
+  {{ end }}
+{{ end }}
+
+{{ if gt (len $gridCards) 0 }}
+  <div id="grid-{{ .Ordinal }}" class="masonry-grid">
+    <div class="grid-sizer"></div>
+    {{ range $gridCards }}
+      {{ . | safeHTML }}
+    {{ end }}
+  </div>
+  
+{{ end }}
+{{ end }}
+
+{{/* Scripts mit erweiterter Masonry-Init */}}
+{{ if eq ($page.Scratch.Get "cc_scripts_loaded") nil }}
+  {{ $page.Scratch.Set "cc_scripts_loaded" true }}
+  
+  {{ partialCached "hugomods/masonry-js/assets/js" $page }}
+  {{ partialCached "gordolin/card-columns/imagesloaded" $page }}
+
+  {{- $opts := dict "targetPath" "js/index.js" "minify" hugo.IsProduction }}
+  {{- $js := resources.Get "hb/modules/gordolin/js/index.ts" | js.Build $opts }}
+  {{- if hugo.IsProduction }}{{ $js = $js | fingerprint }}{{ end }}
+  {{ with $js }}
+    <script src="{{ .RelPermalink }}" integrity="{{ .Data.Integrity | default "" }}" crossorigin="anonymous"></script>
+  {{ else }}
+    <script>console.error('Custom JS not found');</script>
+  {{ end }}
+  
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var grids = document.querySelectorAll('.masonry-grid');
+    grids.forEach(function(grid) {
+      if (grid.msnry) return;
+      imagesLoaded(grid, function() {  // Warte auf Bilder/Videos
+        var msnry = new Masonry(grid, {
+          itemSelector: '.grid-item',
+          columnWidth: '.grid-sizer',
+          percentPosition: true,
+          gutter: 10,
+          columnFill: false  // Neu: Verhindert vertikales Stacking, füllt Spalten horizontal
+        });
+        grid.msnry = msnry;
+        msnry.layout();  // Trigger Layout
+        // Re-layout bei Resize (für responsive)
+        window.addEventListener('resize', function() { msnry.layout(); });
+      });
+    });
+  });
+  </script>
+{{ end }}
