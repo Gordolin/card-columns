@@ -102,3 +102,20 @@
   .hb-content-panel-wrapper {
     z-index: 10 !important; /* Höher als .grid-item.card (z-index: 1) */
   }
+
+  /* Shortcode-spezifisch: Immer 2 Spalten */
+  .card-columns--two {
+    .grid-sizer { width: calc((100% - 10px) / 2) !important; }
+    .grid-item.card {
+      width: calc((100% - 10px) / 2) !important;
+      position: absolute !important;
+      min-width: 200px;
+      max-width: none;
+    }
+  
+    /* Mobil-Fallback (optional) */
+    @media (max-width: 767.98px) {
+      .grid-sizer { width: 100% !important; }
+      .grid-item.card { width: 100% !important; position: static !important; }
+    }
+  }

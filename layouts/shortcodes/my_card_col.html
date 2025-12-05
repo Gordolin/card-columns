@@ -28,7 +28,7 @@
 {{ end }}
 
 {{ if gt (len $gridCards) 0 }}
-  <div id="grid-{{ .Ordinal }}" class="masonry-grid">
+  <div id="grid-{{ .Ordinal }}" class="masonry-grid card-columns--two">
     <div class="grid-sizer"></div>
     {{ range $gridCards }}
       {{ . | safeHTML }}
@@ -54,25 +54,44 @@
     <script>console.error('Custom JS not found');</script>
   {{ end }}
   
-  <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var grids = document.querySelectorAll('.masonry-grid');
-    grids.forEach(function(grid) {
-      if (grid.msnry) return;
-      imagesLoaded(grid, function() {  // Warte auf Bilder/Videos
-        var msnry = new Masonry(grid, {
-          itemSelector: '.grid-item',
-          columnWidth: '.grid-sizer',
-          percentPosition: true,
-          gutter: 10,
-          columnFill: false  // Neu: Verhindert vertikales Stacking, füllt Spalten horizontal
-        });
-        grid.msnry = msnry;
-        msnry.layout();  // Trigger Layout
-        // Re-layout bei Resize (für responsive)
-        window.addEventListener('resize', function() { msnry.layout(); });
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var grids = document.querySelectorAll('.masonry-grid');
+  grids.forEach(function(grid) {
+    if (grid.msnry) return;
+    imagesLoaded(grid, function() {  // Warte auf Bilder/Videos
+
+      // --- Wenn class card-columns--two vorhanden, erzwinge 2 Spalten-width für grid-sizer ---
+      if (grid.classList.contains('card-columns--two')) {
+        // Berechne pixelbreite für 2 Spalten inkl. Gutter (gutter = 10)
+        var gutter = 10;
+        function setTwoColWidth() {
+          var cols = 2;
+          // Verwende clientWidth (Inhaltbreite des grid-Containers)
+          var containerWidth = grid.clientWidth;
+          var width = Math.floor((containerWidth - (cols - 1) * gutter) / cols);
+          var sizer = grid.querySelector('.grid-sizer');
+          if (sizer) sizer.style.width = width + 'px';
+        }
+        // Setze initial und bei Resize
+        setTwoColWidth();
+        window.addEventListener('resize', setTwoColWidth);
+      }
+
+      var msnry = new Masonry(grid, {
+        itemSelector: '.grid-item',
+        columnWidth: '.grid-sizer',
+        percentPosition: false, // false, da wir jetzt Pixel-breite setzen
+        gutter: 10,
+        columnFill: false
       });
+      grid.msnry = msnry;
+      msnry.layout();  // Trigger Layout
+      // Re-layout bei Resize (für responsive)
+      window.addEventListener('resize', function() { msnry.layout(); });
     });
   });
-  </script>
+});
+</script>
+
 {{ end }}
